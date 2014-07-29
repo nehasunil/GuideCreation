@@ -1,7 +1,13 @@
 #Input Variables
 
-#dataSet: Users can import other data sets if they are interested in other data.
+#dataSet: Users can import other data sets if they are interested in other data. 
 dataSet ="Roadmap + Encode"
+
+#dataDirectory: Users can import directory of data here if they are interested in other data
+dataDirectory = NULL
+
+#clusterDirectory: Users can import directory of clusters here if they are interested in other data
+clusterDirectory = NULL
 
 #focus: Name of cell type or individual
 #The users add the name of the specific cell type or individual or import if necessary 
@@ -57,147 +63,6 @@ cluster=NULL
 sampledRegions=NULL
 
 #Methods
-#accessors
-#getDataSet() - returns name of data set (String)
-getDataSet <- function()
-{
-  return(dataSet)
-}
-#getFocus() - returns name of focus (String)
-getFocus <- function()
-{
-  return(focus)
-}
-#getChromState() - returns vector with all the chromatin states chosen (vector of Strings)
-getChromState <- function()
-{
-  return(chromState)
-}
-#getGeneOntology() - returns vector of strings with gene ontology selections
-getGeneOntology <- function()
-{
-  return(geneOntology)
-}
-#getGuideNumber() - returns number of guides to create (int)
-getGuideNumber <- function()
-{
-  return(guideNumber)
-}
-#getGuidesPerRegion() - returns number of guides per sampled region
-getGuidesPerRegion <- function()
-{
-  return(guidesPerRegion)
-}
-#getNumberOfRegions() - returns number of regions to be chosen
-getNumberOfRegions <- function()
-{
-  return(numberOfRegions)
-}
-#getFractionCellTypeSpecific() - returns fraction of regions that should be cell type specific
-getFractionCellTypeSpecific <- function()
-{
-  return(fractionCellTypeSpecific)
-}
-#getWeightingForSampling() - return weighting for sampling vector
-getWeightingForSampling <- function()
-{
-  return(weightingForSampling)
-}
-#getGuidesPerRegionVector() - returns guides per region vector
-getGuidesPerRegionVector <- function()
-{
-  return(getGuidesPerRegionVector)
-}
-
-#modifiers:
-#setDataSet(String data) - sets dataSet to data
-setDataSet <- function(data)
-{
-  dataSet=data
-}
-#setFocus(String focusName) - sets focus to focusName
-setFocus <- function(focusName)
-{
-  focus=focusName
-}
-#setChromState(vector chromatinState) adds chromatinState to chromState
-setChromState <- function(chromatinState)
-{
-  chromState=chromatinState
-}
-#addChromState(String chromatinState) adds chromatinState to chromState
-addChromState <- function(chromatinState)
-{
-  chromState=c(chromState,chromatinState)
-}
-#removeChromState(String chromatinState) removes chromatinState from chromState
-removeChromState <- function(chromatinState)
-{
-  index=match(chromatinState,chromState)
-  if(!is.na(index))
-  {
-    chromState=chromState[-index]
-  }
-  else
-  {
-    print(paste(chromatinState,"cannot be removed"))
-  }
-}
-#setGeneOntology(vector go) - sets geneOntology to go
-setGeneOntology <- function(go)
-{
-  geneOntology=go
-}
-#addGeneOntology(String go) - adds go to geneOntology
-addGeneOntology <- function(go)
-{
-  geneOntology=c(chromeState,focusName)
-}
-#removeGeneOntology(String go) - removes go from geneOntology
-removeGeneOntology <- function(go)
-{
-  index=match(go,geneOntology)
-  if(!is.na(index))
-  {
-    geneOntology=go[-index]
-  }
-  else
-  {
-    print(paste(go,"cannot be removed"))
-  }
-}
-#setGuideNumber(int guideNum) - sets guideNumber to guideNum
-setGuideNumber <- function(guideNum)
-{
-  guideNumber=guideNum
-}
-#setGuidesPerRegion(int numGuidesPerRegion) sets guidesPerRegion to numGuidesPerRegion and changes numberOfRegions accordingly
-setGuidesPerRegion <- function(numGuidesPerRegion)
-{
-  guidesPerRegion = numGuidesPerRegion
-  numberOfRegions = floor(guideNumber/guidesPerRegion)
-}
-#setNumberOfRegions(int numRegions) - sets numberOfRegions to numRegions and changes guidesPerRegion accordingly
-setNumberOfRegions <- function(numRegions)
-{
-  numberOfRegions = numRegions
-  guidesPerRegion= floor(guideNumber/numberOfRegions)
-}
-#setFractionCellTypeSpecific(Double fractionCTSpecific) - sets fractionCellTypeSpecific to fractionCTSpecific
-setFractionCellTypeSpecific <- function(fractionCTSpecific)
-{
-  fractionCellTypeSpecific = fractionCTSpecific
-}
-#setWeightingForSampling(vector weightForSampling)
-setWeightingForSampling <- function(weightForSampling)
-{
-  fractionCellTypeSpecific = fractionCTSpecific
-}
-#setGuidesPerRegionVector(vector GuidesPerRegionVect)
-setGuidesPerRegionVector <- function(guidesPerRegionVect)
-{
-  guidesPerRegionVector = guidesPerRegionVect
-}
 #createInfoMatrix(vector cols) - returns a sparse matrix with each region grouped by cluster as the rows, 
 #and the attributes in the parameter cols as the columns. All the valid column options include cluster, 
 #number of transcription factor binding sites, and gene ontology.
@@ -208,29 +73,123 @@ createInfoMatrix <- function(cols)
 #and its binding sites in regions 
 intersectionTFSites <- function(regions)
 {
-  #bedtools for R
+  #bedtools for R?
   #find intersections
+  #
 }
 #selectCluster() - returns cluster (can only be done with Roadmap data) with highest percentage of its regions 
 #from the cell type of focus and sets cluster instance variable to the cluster (set min percentage)
 selectCluster <- function()
 {
-  #find percent in each cluster
-  #check if any percent is greater than minFractionFocusInCluster
-  #set cluster instance variable
-  return(cluster)
+  files <- list.files(path=clusterDirectory)
+  
+  clust=read.table(paste(clusterDirectory,files[1],sep=''))
+  count=0
+  for(k in 1:nrow(clust))
+  {
+    if(!is.na(match(paste(as.character(clust[k,1]),":",clust[k,2],"-",clust[k,3],sep=''), paste(as.character(focus[,4])))))
+    { count=count+1 }
+  }
+  percentage=count/nrow(clust)
+  k562_dist=cbind(count,percentage)
+  
+  for(i in 2:length(files))
+  {
+    clust=read.table(paste(clusterDirectory,files[i],sep=''))
+    count=0
+    for(k in 1:nrow(clust))
+    {
+      if(!is.na(match(paste(as.character(clust[k,1]),":",clust[k,2],"-",clust[k,3],sep=''), paste(as.character(focus[,4])))))
+      { count=count+1 }
+    }
+    percentage=count/nrow(clust)
+    k562_dist=rbind(k562_dist,c(count,percentage))
+  }
+  
+  rownames(k562_dist)=c(1:length(files))
+  
+  if (max(k562_dist[,2])>minFractionFocusInCluster)
+  {
+    maxInd=which.max(k562_dist[,2])
+    cluster=read.table(paste(clusterDirectory,files[maxInd],sep=''))
+    return(cluster)
+  }
 }
 #calcWeightingForSampling() - calculates weighting of regions based on fraction of cell type specific
-calcWeightingForSampling <- function()
+#parameter = data frame with gene ontology in first column and weighting for each GO in second column
+calcWeightingForSampling <- function(go)
 {
-  focusedCount= round(fractionCellTypeSpecific *guideNumber)
- 
+  if(nrow(go)>0)
+  {
+    weighting = rep(0,times=nrow(focus))
+    for(i in 1:nrow(focus))
+    {
+      goIndex=match(focus$GeneOntology[i],go[,1])
+      if(!is.na(goIndex))
+      {
+          if(length(goIndex)==1)
+          {
+            weighting[i]=go[goIndex,2]
+          }
+          else
+          {
+            weights=go[goIndex,2]
+            weighting[i]=max(weights)
+          }
+      }
+    }
+    return(weighting)
+  }
+  else
+  {
+    return(rep(1,times=nrow(focus)))
+  }
 }
 #sampleRegions(dataframe(BED files) remRegion) - samples specified number of regions using input values 
-#ignoring regions in remRegion using weightingForSampling, sets sampledRegions to the regions sampled, 
+#ignoring regions in remRegion given indices of guides of interest (weighted), 
+#
+#sets sampledRegions to the regions sampled
 #and returns sampledRegions
-sampleRegions <- function(remRegions)
+sampleRegions <- function(weighted)
 {
+  numCTSpecific=fractionCellTypeSpecific*guideNumber
+  numNonSpecific=guideNumber-numCTSpecific
+  
+  focusWithWeighting=cbind(focus,weighted)
+  
+  ctSpecific=selectCluster()
+  #for each cluster value, look for weighting value on focus and append
+  ctSpecific$Weighting=0
+  for(i in 1:nrow(ctSpecific))
+  {
+    index=match(ctSpecific[i,4],focusWithWeighting[,4])
+    if(!is.na(index))
+    {
+      ctSpecific[i,ncol(ctSpecific)]=as.numeric(focusWithWeighting[index,ncol(focusWithWeighting)])
+    }
+  }
+    
+  if (nrow(ctSpecific) < numCTSpecific)
+  {
+    numCTspecific=nrow(ctSpecific)
+    numNonSpecific = guideNumber-numCTSpecific
+    print("There are not enough cell type specific regions")
+    print(paste(numCTspecific,"cell type specific regions will be sampled"))
+    print(paste(numNonSpecific,"nonspecific regions will be sampled"))
+  }
+  specificSample=ctSpecific[sample(1:nrow(ctSpecific),numCTSpecific),prob=ctSpecific[,nrow(ctSpecific)]]
+  
+  rest=focusWithWeighting
+  for(i in 1:nrow(ctSpecific))
+  {
+    index=match(paste(ctSpecific[i,1],":",ctSpecific[i,2],"-",ctSpecific[i,3],sep=''),rest[,4])
+    if(!is.na(index))
+    {
+      rest[-index,]
+    }
+  }
+  nonSpecificSample=rest[sample(1:nrow(rest),numNonSpecific),prob=rest[,ncol(rest)]]
+  return (cbind(specificSample,nonSpecificSample))
 }
 #createGuides(dataframe(BED files) regions) - creates guides for the given regions,
 #the number of guides per region equals the input value guidesPerRegion
